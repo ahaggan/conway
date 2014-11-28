@@ -16,6 +16,9 @@ typedef struct cell{
 
 typedef struct version{
     cell grid[HEIGHT][WIDTH];
+    int target_row;
+    int target_column;
+    struct version *next;
     struct version *parent;
     //Could I have a dynamically allocated array of child boards, allocated when number of new child boards was calculated
 }version;
@@ -25,6 +28,8 @@ void print_board(version *board);
 void make_move(version *board);
 void copy_cell_array(cell **original, cell **copy);
 void make_child(version *parent, version *child);
+int check_up(version *board, int row, int column);
+void add_to_list(version *board, version *tmp_board);
 
 int main(void){
     version *board;
@@ -64,23 +69,47 @@ void print_board(version *board){
         }
         printf("\n");
     }
+    printf("\n\n");
 }    
 
 void make_move(version *board){
-    //int row, column;
-    version tmp_board;
-    make_child(board, &tmp_board);
-    print_board(&tmp_board);
-    tmp_board.grid[0][0].alive = YES;
-    print_board(&tmp_board);
-    print_board(board);
-    /*
+    int row, column, found = NO;
+    version *tmp_board;
+    tmp_board = (version*)malloc(sizeof(version));
+    
+    make_child(board, tmp_board);
+    
     for(row = 0; row < HEIGHT; row++){
         for(column = 0; column < WIDTH; column++){
+        
+            if(check_up(board, row, column) == YES){
+                tmp_board->grid[row][column].alive = NO;
+                tmp_board->grid[row-1][column].alive = NO;
+                tmp_board->grid[row-2][column].alive = YES;
+                add_to_list(board, tmp_board);
+                //print_board(tmp_board);
+                tmp_board = (version*)malloc(sizeof(version)); //When and how do I free these mallocs?
+                make_child(board, tmp_board);
+            }
         }
-    }*/
+    }
+    
 }
     
+int check_up(version *board, int row, int column){
+    if(row < 2 || board->grid[row][column].alive == NO){
+        return NO;
+    }
+    else{
+        if(board->grid[row-1][column].alive == YES && board->grid[row-2][column].alive == NO){
+            return YES;
+        }
+        else{
+            return NO;
+        }
+    }
+}
+
 void make_child(version *parent, version *child){
     int row, column;
     for(row = 0; row < HEIGHT; row++){
@@ -92,10 +121,19 @@ void make_child(version *parent, version *child){
             child->grid[row][column].down = parent->grid[row][column].down;
         }
     }
-    child->parent = parent;
+    child->target_row = parent->target_row;
+    child->target_column = parent->target_column;
+    //child->parent = parent;
 }
     
-    
+void add_to_list(version *board, version *tmp_board){
+    if(board->next == NULL){
+        board->next = tmp_board;
+    }
+    else{
+        add_to_list(board->next, tmp_board);
+    }
+}
     
     
     
