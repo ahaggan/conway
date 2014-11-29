@@ -31,7 +31,7 @@ void copy_cell_array(cell **original, cell **copy);
 void make_child(version *parent, version *child);
 int check_up(version *board, int row, int column);
 void add_to_list(version *board, version *tmp_board);
-int search_board_list(version *board, int found);
+int search_board_list(version *board);
 int compare_grid(version *board, version *tmp_board);
 version* get_start_board(version *board);
 
@@ -77,6 +77,7 @@ int search_board_list(version *board){
     tmp_board = get_start_board(board);
     while(tmp_board != NULL && found == NO){
         found = compare_grid(board, tmp_board);
+        tmp_board = tmp_board->next;
     }
     return found;    
     
@@ -133,7 +134,7 @@ void make_move(version *board){
                 tmp_board->grid[row][column].alive = NO;
                 tmp_board->grid[row-1][column].alive = NO;
                 tmp_board->grid[row-2][column].alive = YES;
-                if (search_board_list != YES){
+                if (search_board_list(tmp_board) != YES){
                     add_to_list(board, tmp_board);
                 }
                 //print_board(tmp_board);
