@@ -30,6 +30,7 @@ typedef struct version{
 version* create_initial_board(void);
 void print_board(version *board);
 void print_list(version *board);
+void print_solution(version *board);
 version* make_move(version *board);
 void copy_cell_array(cell **original, cell **copy);
 void make_child(version *parent, version *child);
@@ -44,11 +45,11 @@ version* find_target(version *board);
 int main(void){
     version *board, *solution;
     board = create_initial_board();
-    board->target_row = 5;
-    board->target_column = 1;
+    board->target_row = 2;
+    board->target_column = 5;
     solution = find_target(board);
     //print_list(board);
-    print_board(solution);
+    print_solution(solution);
 }
 
 version* create_initial_board(void){
@@ -126,6 +127,13 @@ void print_list(version *board){
     print_board(board);
     if(board->next != NULL){
         print_list(board->next);
+    }
+}
+
+void print_solution(version *board){
+    print_board(board);
+    if(board->parent != NULL){
+        print_solution(board->parent);
     }
 }
 
