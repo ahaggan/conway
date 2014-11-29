@@ -25,6 +25,7 @@ typedef struct version{
 
 version* create_initial_board(void);
 void print_board(version *board);
+void print_list(version *board);
 void make_move(version *board);
 void copy_cell_array(cell **original, cell **copy);
 void make_child(version *parent, version *child);
@@ -35,7 +36,7 @@ int main(void){
     version *board;
     board = create_initial_board();
     make_move(board);
-    //print_board(board);
+    print_list(board);
 }
 
 version* create_initial_board(void){
@@ -71,9 +72,16 @@ void print_board(version *board){
     }
     printf("\n\n");
 }    
+//FUNCTION YOU ARE WORKING ON!
+void print_list(version *board){
+    print_board(board);
+    if(board->next != NULL){
+        print_list(board->next);
+    }
+}
 
 void make_move(version *board){
-    int row, column, found = NO;
+    int row, column;
     version *tmp_board;
     tmp_board = (version*)malloc(sizeof(version));
     
