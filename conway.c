@@ -6,6 +6,9 @@
 #define WIDTH 7
 #define HEIGHT 8
 
+enum type{up, down, left, right};
+typedef enum type type;
+
 typedef struct cell{
     int alive;
     int left;
@@ -34,6 +37,7 @@ void add_to_list(version *board, version *tmp_board);
 int search_board_list(version *board);
 int compare_grid(version *board, version *tmp_board);
 version* get_start_board(version *board);
+void move(version *board, int row, int column, type direction); 
 
 int main(void){
     version *board;
@@ -131,9 +135,8 @@ void make_move(version *board){
         for(column = 0; column < WIDTH; column++){
         
             if(check_up(board, row, column) == YES){
-                tmp_board->grid[row][column].alive = NO;
-                tmp_board->grid[row-1][column].alive = NO;
-                tmp_board->grid[row-2][column].alive = YES;
+                move(tmp_board, row, column, up);
+                
                 if (search_board_list(tmp_board) != YES){
                     add_to_list(board, tmp_board);
                 }
@@ -145,7 +148,31 @@ void make_move(version *board){
     }
     
 }
-    
+void move(version *board, int row, int column, type direction){
+    switch (direction){
+        case up:
+            board->grid[row][column].alive = NO;
+            board->grid[row - 1][column].alive = NO;
+            board->grid[row - 2][column].alive = YES;
+            break;
+        case down:
+            board->grid[row][column].alive = NO;
+            board->grid[row + 1][column].alive = NO;
+            board->grid[row + 2][column].alive = YES;
+            break;
+        case left:
+            board->grid[row][column].alive = NO;
+            board->grid[row][column - 1].alive = NO;
+            board->grid[row][column - 2].alive = YES;
+            break;
+        case right:
+            board->grid[row][column].alive = NO;
+            board->grid[row][column + 1].alive = NO;
+            board->grid[row][column + 2].alive = YES;
+            break;
+    } 
+}
+
 int check_up(version *board, int row, int column){
     if(row < 2 || board->grid[row][column].alive == NO){
         return NO;
