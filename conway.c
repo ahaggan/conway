@@ -32,7 +32,7 @@ void print_list(version *board);
 void make_move(version *board);
 void copy_cell_array(cell **original, cell **copy);
 void make_child(version *parent, version *child);
-int check_up(version *board, int row, int column);
+int check(version *board, int row, int column, type direction);
 void add_to_list(version *board, version *tmp_board);
 int search_board_list(version *board);
 int compare_grid(version *board, version *tmp_board);
@@ -126,6 +126,7 @@ void print_list(version *board){
 
 void make_move(version *board){
     int row, column;
+    type direction;
     version *tmp_board;
     tmp_board = (version*)malloc(sizeof(version));
     
@@ -133,16 +134,18 @@ void make_move(version *board){
     
     for(row = 0; row < HEIGHT; row++){
         for(column = 0; column < WIDTH; column++){
-        
-            if(check_up(board, row, column) == YES){
-                move(tmp_board, row, column, up);
-                
-                if (search_board_list(tmp_board) != YES){
-                    add_to_list(board, tmp_board);
+            for(direction = up; direction <= right; direction++){
+            
+                if(check(board, row, column, direction) == YES){
+                    move(tmp_board, row, column, direction);
+                    
+                    if (search_board_list(tmp_board) != YES){
+                        add_to_list(board, tmp_board);
+                    }
+                    //print_board(tmp_board);
+                    tmp_board = (version*)malloc(sizeof(version)); //When and how do I free these mallocs?
+                    make_child(board, tmp_board);
                 }
-                //print_board(tmp_board);
-                tmp_board = (version*)malloc(sizeof(version)); //When and how do I free these mallocs?
-                make_child(board, tmp_board);
             }
         }
     }
@@ -173,18 +176,55 @@ void move(version *board, int row, int column, type direction){
     } 
 }
 
-int check_up(version *board, int row, int column){
-    if(row < 2 || board->grid[row][column].alive == NO){
+int check(version *board, int row, int column, type direction){
+    if(board->grid[row][column].alive == NO){
         return NO;
     }
-    else{
-        if(board->grid[row-1][column].alive == YES && board->grid[row-2][column].alive == NO){
-            return YES;
-        }
-        else{
-            return NO;
-        }
-    }
+    //ARE THE 1's AND 2's MAGIC NUMBERS?
+    switch (direction){
+        case up:
+            if(row < 2){
+                return NO;
+            }
+            else{
+                if(board->grid[row - 1][column].alive == YES && board->grid[row - 2][column].alive == NO){
+                    return YES;
+                }
+            }
+            break;
+        case down:
+            if(row > HEIGHT - 3){
+                return NO;
+            }
+            else{
+                if(board->grid[row + 1][column].alive == YES && board->grid[row + 2][column].alive == NO){
+                    return YES;
+                }
+            }
+            break;
+        case left:
+            if(column < 2){
+                return NO;
+            }
+            else{
+                if(board->grid[row][column - 1].alive == YES && board->grid[row][column - 2].alive == NO){
+                    return YES;
+                }
+            }
+            break;
+        case right:
+           if(column > WIDTH - 3){
+                return NO;
+            }
+            else{
+                if(board->grid[row][column + 1].alive == YES && board->grid[row][column + 2].alive == NO){
+                    return YES;
+                }
+            }
+            break;
+    } 
+    return NO;
+    
 }
 
 void make_child(version *parent, version *child){
