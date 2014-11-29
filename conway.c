@@ -41,16 +41,33 @@ int compare_grid(version *board, version *tmp_board);
 version* get_start_board(version *board);
 void move(version *board, int row, int column, type direction); 
 version* find_target(version *board);
+int check_input(int argc, char **argv, version *board);
 
-int main(void){
+int main(int argc, char **argv){
     version *board, *solution;
     board = create_initial_board();
-    board->target_row = 2;
-    board->target_column = 5;
-    solution = find_target(board);
-    //print_list(board);
-    print_solution(solution);
+    if(check_input(argc, argv, board) == YES){
+        solution = find_target(board);
+        //print_list(board);
+        print_solution(solution);
+    }
+    else{
+        printf("\nYour input is incorrect,\nyou need to enter the executable followed by the width then the height.\n");
+    }
 }
+
+int check_input(int argc, char **argv, version *board){
+    if(argc >= 3){
+    //HOW CAN I CHECK THE INPUTS ARE INTEGERS?
+        board->target_column = atoi(argv[1]);
+        board->target_row = atoi(argv[2]);
+        return YES;
+    }
+    else{
+        return NO;
+    }
+}
+        
 
 version* create_initial_board(void){
     int row, column;
