@@ -31,6 +31,9 @@ void copy_cell_array(cell **original, cell **copy);
 void make_child(version *parent, version *child);
 int check_up(version *board, int row, int column);
 void add_to_list(version *board, version *tmp_board);
+int search_board_list(version *board, int found);
+int compare_grid(version *board, version *tmp_board);
+version* get_start_board(version *board);
 
 int main(void){
     version *board;
@@ -55,10 +58,45 @@ version* create_initial_board(void){
     }
     return new;
 }
-                
-void print_board(version *board){
+
+version* get_start_board(version *board){
+    
+    if(board->parent == NULL){
+        return board;
+    }
+    else{
+        return get_start_board(board->parent);
+    }  
+
+}
+
+int search_board_list(version *board){
+
+    version *tmp_board;
+    int found = NO;
+    tmp_board = get_start_board(board);
+    while(tmp_board != NULL && found == NO){
+        found = compare_grid(board, tmp_board);
+    }
+    return found;    
+    
+}
+  
+int compare_grid(version *board, version *tmp_board){
     int row, column;
-    //version tmp_board[HEIGHT][WIDTH];
+    for(row = 0; row < HEIGHT; row++){
+        for(column = 0; column < WIDTH; column++){
+            if( board->grid[row][column].alive != tmp_board->grid[row][column].alive){
+                return NO;
+            }
+        }
+    }
+    return YES;
+}
+            
+void print_board(version *board){
+
+    int row, column;
     for(row = 0; row < HEIGHT; row++){
         for(column = 0; column < WIDTH; column++){
             if(board->grid[row][column].alive == YES){
@@ -71,8 +109,9 @@ void print_board(version *board){
         printf("\n");
     }
     printf("\n\n");
+    
 }    
-//FUNCTION YOU ARE WORKING ON!
+
 void print_list(version *board){
     print_board(board);
     if(board->next != NULL){
@@ -94,7 +133,9 @@ void make_move(version *board){
                 tmp_board->grid[row][column].alive = NO;
                 tmp_board->grid[row-1][column].alive = NO;
                 tmp_board->grid[row-2][column].alive = YES;
-                add_to_list(board, tmp_board);
+                if (search_board_list != YES){
+                    add_to_list(board, tmp_board);
+                }
                 //print_board(tmp_board);
                 tmp_board = (version*)malloc(sizeof(version)); //When and how do I free these mallocs?
                 make_child(board, tmp_board);
@@ -131,7 +172,7 @@ void make_child(version *parent, version *child){
     }
     child->target_row = parent->target_row;
     child->target_column = parent->target_column;
-    //child->parent = parent;
+    child->parent = parent;
 }
     
 void add_to_list(version *board, version *tmp_board){
