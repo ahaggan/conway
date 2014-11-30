@@ -1,10 +1,12 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<unistd.h>
 
 #define YES 1
 #define NO 0
 #define WIDTH 7
 #define HEIGHT 8
+#define CLEAR_SCREEN "\033[2J\033[1;1H"
 
 enum type{up, down, left, right};
 typedef enum type type;
@@ -27,9 +29,19 @@ typedef struct version{
     //Could I have a dynamically allocated array of child boards, allocated when number of new child boards was calculated
 }version;
 
+typedef struct reverse{
+    version *board;
+    struct reverse *pointer;
+}reverse;
+
+typedef struct stack{
+    reverse *pointer_to_stack;
+}stack;
+
 version* create_initial_board(void);
 void print_board(version *board);
 void print_list(version *board);
+void prepare_solution(version *board, stack *pointer);
 void print_solution(version *board);
 version* make_move(version *board);
 void copy_cell_array(cell **original, cell **copy);
@@ -42,6 +54,9 @@ version* get_start_board(version *board);
 void move(version *board, int row, int column, type direction); 
 version* find_target(version *board);
 int check_input(int argc, char **argv, version *board);
+void initialise_stack(stack *pointer);
+void push(stack *pointer, version *board);
+version* pop(stack *pointer);
 
 int main(int argc, char **argv){
     version *board, *solution;
@@ -141,6 +156,8 @@ void print_board(version *board){
 }    
 
 void print_list(version *board){
+    printf(CLEAR_SCREEN);
+    sleep(1);
     print_board(board);
     if(board->next != NULL){
         print_list(board->next);
@@ -148,10 +165,43 @@ void print_list(version *board){
 }
 
 void print_solution(version *board){
-    print_board(board);
+    stack pointer;
+    version *tmp_board;
+    initialise_stack(&pointer);
+    prepare_solution(board, &pointer);
+    do{
+        tmp_board = pop(&pointer);
+        print_board(tmp_board);
+    }while(tmp_board->next != NULL);
+}
+    
+void prepare_solution(version *board, stack *pointer){
+    push(pointer, board);
+    
     if(board->parent != NULL){
-        print_solution(board->parent);
+        prepare_solution(board->parent, pointer);
     }
+}
+
+void push(stack *pointer, version *board)
+{
+    reverse *new;
+    new = (reverse*)malloc(sizeof(reverse));
+    new->pointer = pointer->pointer_to_stack;
+    pointer->pointer_to_stack->board = board;
+    pointer->pointer_to_stack = new;
+}
+
+version* pop(stack *pointer)
+{
+    pointer->pointer_to_stack = pointer->pointer_to_stack->pointer;
+    //assert(pointer->pointer_list != NULL);
+    return pointer->pointer_to_stack->board;
+}
+
+void initialise_stack(stack *pointer){
+    pointer->pointer_to_stack = (reverse*)malloc(sizeof(reverse));
+    pointer->pointer_to_stack->pointer = NULL;
 }
 
 version* find_target(version *board){
@@ -191,8 +241,8 @@ version* make_move(version *board){
         }
     }
     return board->next; //will be the next board of moves to check
-    
 }
+
 void move(version *board, int row, int column, type direction){
     switch (direction){
         case up:
