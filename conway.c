@@ -1,3 +1,17 @@
+/*
+*
+*   Conway's Soldiers
+*   Created by Ashley Haggan
+*   University of Bristol
+*   2014
+*
+*   Program takes a target row and column for the user, creates a linked list of possible possitions the board can take
+*   until it finds the required solution. It then prints the solution in SDL.
+*
+*
+*/
+
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
@@ -63,6 +77,7 @@ void push(stack *pointer, version *board);
 version* pop(stack *pointer);
 void free_space(version *board);
 void print_error(void);
+
 int main(int argc, char **argv){
     version *board, *solution;
     board = create_initial_board();
@@ -80,6 +95,12 @@ int main(int argc, char **argv){
             printf("\nMove not possible");
         }
         free_space(board);
+        
+        do{
+            Neill_SDL_Events(&sw);
+        }while(!sw.finished);
+        
+        atexit(SDL_Quit);
         return 0;
     }
     else{

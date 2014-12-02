@@ -1,8 +1,8 @@
-CFLAGS = -O5 -Wall -pedantic -std=c99 -lm
-INCS = 
+CFLAGS = `sdl2-config --cflags` -O4 -Wall -pedantic -std=c99 -lm
+INCS = neillsdl2.h 
 TARGET = conway
-SOURCES =  $(TARGET).c
-LIBS = 
+SOURCES =  neillsdl2.c $(TARGET).c
+LIBS = `sdl2-config --libs`
 CC = gcc
 
 
