@@ -1,4 +1,4 @@
-CFLAGS = -O4 -Wall -pedantic -std=c99 -lm
+CFLAGS = -O5 -Wall -pedantic -std=c99 -lm
 INCS = 
 TARGET = conway
 SOURCES =  $(TARGET).c
