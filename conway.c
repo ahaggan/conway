@@ -58,7 +58,7 @@ typedef struct stack{
 
 version* create_initial_board(void);
 void print_board(version *board, SDL_Simplewin *sw);
-void print_list(version *board);
+void print_list(version *board, SDL_Simplewin *sw);
 void prepare_solution(version *board, stack *pointer);
 void print_solution(version *board, SDL_Simplewin *sw);
 version* make_move(version *board);
@@ -88,6 +88,7 @@ int main(int argc, char **argv){
         Neill_SDL_Init(&sw);
         
         if(solution->found == YES){
+            //print_list(board, &sw);
             print_solution(solution, &sw);
             printf("\nSolution found!\n");
         }
@@ -212,18 +213,18 @@ void print_board(version *board, SDL_Simplewin *sw){
     SDL_Rect rectangle;
     rectangle.w = RECT_SIZE;
     rectangle.h = RECT_SIZE;
+    
     for(row = 0; row < HEIGHT; row++){
         for(column = 0; column < WIDTH; column++){
+            rectangle.x = column * RECT_SIZE;
+            rectangle.y = row * RECT_SIZE;
             if(board->grid[row][column].alive == YES){
                 Neill_SDL_SetDrawColour(sw, 0, 255, 0);
-                rectangle.x = column * RECT_SIZE;
-                rectangle.y = row * RECT_SIZE;
                 SDL_RenderFillRect(sw->renderer, &rectangle);
                 //printf("#");
             }
             else{
                 Neill_SDL_SetDrawColour(sw, 0, 0 , 0);
-                rectangle.x = column * RECT_SIZE;
                 rectangle.y = row * RECT_SIZE;
                 SDL_RenderFillRect(sw->renderer, &rectangle);
                 Neill_SDL_SetDrawColour(sw, 255, 255, 255);
@@ -231,20 +232,29 @@ void print_board(version *board, SDL_Simplewin *sw){
                 //printf("0");
             }
         }
-        printf("\n");
+        //printf("\n");
     }
-    printf("\n\n");
+    //printf("\n\n");
+    if(board->found == NO){
+        Neill_SDL_SetDrawColour(sw, 255, 0, 255);
+    }
+    else{
+        Neill_SDL_SetDrawColour(sw, 0, 0, 255);
+    }
+    rectangle.x = board->target_column * RECT_SIZE;
+    rectangle.y = board->target_row * RECT_SIZE;
+    SDL_RenderFillRect(sw->renderer, &rectangle);
     SDL_RenderPresent(sw->renderer);
     SDL_UpdateWindowSurface(sw->win); 
     SDL_Delay(1000);
 }    
 
-void print_list(version *board){
+void print_list(version *board, SDL_Simplewin *sw){
     printf(CLEAR_SCREEN);
     sleep(1);
-    //print_board(board);
+    print_board(board, sw);
     if(board->next != NULL){
-        print_list(board->next);
+        print_list(board->next, sw);
     }
 }
 
@@ -314,8 +324,8 @@ version* make_move(version *board){
                     move(tmp_board, row, column, direction);
                     if (search_board_list(tmp_board) == NO){
                         add_to_list(board, tmp_board);
-                        board->counter += 1;
-                        printf("\n%d", board->counter);
+                        //board->counter += 1;
+                        //printf("\n%d", board->counter);
                         if(tmp_board->found == YES){
                             return tmp_board;
                         }
