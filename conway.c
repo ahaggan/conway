@@ -29,10 +29,6 @@ typedef enum type type;
 
 typedef struct cell{
     int alive;
-    int left;
-    int right;
-    int up;
-    int down;
 }cell;
 
 typedef struct version{
@@ -446,10 +442,6 @@ void make_child(version *parent, version *child){
     for(row = 0; row < HEIGHT; row++){
         for(column = 0; column < WIDTH; column++){
             child->grid[row][column].alive = parent->grid[row][column].alive;
-            child->grid[row][column].left = parent->grid[row][column].left;
-            child->grid[row][column].right = parent->grid[row][column].right;
-            child->grid[row][column].up = parent->grid[row][column].up;
-            child->grid[row][column].down = parent->grid[row][column].down;
         }
     }
     child->target_row = parent->target_row;
