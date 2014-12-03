@@ -77,6 +77,7 @@ void push(stack *pointer, version *board);
 version* pop(stack *pointer);
 void free_space(version *board);
 void print_error(void);
+void print_target(version *board, SDL_Simplewin *sw);
 
 int main(int argc, char **argv){
     version *board, *solution;
@@ -235,7 +236,19 @@ void print_board(version *board, SDL_Simplewin *sw){
         }
         //printf("\n");
     }
-    //printf("\n\n");
+    
+    print_target(board, sw);
+   
+    SDL_RenderPresent(sw->renderer);
+    SDL_UpdateWindowSurface(sw->win); 
+    SDL_Delay(1000);
+}    
+
+void print_target(version *board, SDL_Simplewin *sw){
+    SDL_Rect rectangle;
+    rectangle.w = RECT_SIZE;
+    rectangle.h = RECT_SIZE;
+
     if(board->found == NO){
         Neill_SDL_SetDrawColour(sw, 255, 0, 255);
     }
@@ -245,11 +258,7 @@ void print_board(version *board, SDL_Simplewin *sw){
     rectangle.x = board->target_column * RECT_SIZE;
     rectangle.y = board->target_row * RECT_SIZE;
     SDL_RenderFillRect(sw->renderer, &rectangle);
-    SDL_RenderPresent(sw->renderer);
-    SDL_UpdateWindowSurface(sw->win); 
-    SDL_Delay(1000);
-}    
-
+}
 void print_list(version *board, SDL_Simplewin *sw){
     printf(CLEAR_SCREEN);
     sleep(1);
