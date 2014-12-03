@@ -90,7 +90,8 @@ int main(int argc, char **argv){
         if(solution->found == YES){
             //print_list(board, &sw);
             print_solution(solution, &sw);
-            printf("\nSolution found!\n");
+            printf("\nSolution found!");
+            printf("\nClick anywhere in the window to exit program.\n");
         }
         else{
             printf("\nMove not possible");
