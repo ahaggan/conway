@@ -47,13 +47,13 @@ typedef struct version{
     //Could I have a dynamically allocated array of child boards, allocated when number of new child boards was calculated
 }version;
 
-typedef struct reverse{
+typedef struct reverse_list{
     version *board;
-    struct reverse *pointer;
-}reverse;
+    struct reverse_list *previous;
+}reverse_list;
 
 typedef struct stack{
-    reverse *pointer_to_stack;
+    reverse_list *pointer_to_stack;
 }stack;
 
 version* create_initial_board(void);
@@ -290,23 +290,22 @@ void prepare_solution(version *board, stack *pointer){
 
 void push(stack *pointer, version *board)
 {
-    reverse *new;
-    new = (reverse*)malloc(sizeof(reverse));
-    new->pointer = pointer->pointer_to_stack;
+    reverse_list *new;
+    new = (reverse_list*)malloc(sizeof(reverse_list));
+    new->previous = pointer->pointer_to_stack;
     pointer->pointer_to_stack->board = board;
     pointer->pointer_to_stack = new;
 }
 
 version* pop(stack *pointer)
 {
-    pointer->pointer_to_stack = pointer->pointer_to_stack->pointer;
-    //assert(pointer->pointer_list != NULL);
+    pointer->pointer_to_stack = pointer->pointer_to_stack->previous;
     return pointer->pointer_to_stack->board;
 }
 
 void initialise_stack(stack *pointer){
-    pointer->pointer_to_stack = (reverse*)malloc(sizeof(reverse));
-    pointer->pointer_to_stack->pointer = NULL;
+    pointer->pointer_to_stack = (reverse_list*)malloc(sizeof(reverse_list));
+    pointer->pointer_to_stack->previous = NULL;
 }
 
 version* find_target(version *board){
