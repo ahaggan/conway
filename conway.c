@@ -255,6 +255,7 @@ void print_target(version *board, SDL_Simplewin *sw){
     else{
         Neill_SDL_SetDrawColour(sw, 0, 0, 255);
     }
+
     rectangle.x = board->target_column * RECT_SIZE;
     rectangle.y = board->target_row * RECT_SIZE;
     SDL_RenderFillRect(sw->renderer, &rectangle);
