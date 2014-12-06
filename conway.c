@@ -29,10 +29,6 @@ typedef enum type type;
 
 typedef struct cell{
     int alive;
-    int left;
-    int right;
-    int up;
-    int down;
 }cell;
 
 typedef struct version{
@@ -47,13 +43,13 @@ typedef struct version{
     //Could I have a dynamically allocated array of child boards, allocated when number of new child boards was calculated
 }version;
 
-typedef struct reverse{
+typedef struct reverse_list{
     version *board;
-    struct reverse *pointer;
-}reverse;
+    struct reverse_list *previous;
+}reverse_list;
 
 typedef struct stack{
-    reverse *pointer_to_stack;
+    reverse_list *pointer_to_stack;
 }stack;
 
 version* create_initial_board(void);
@@ -77,6 +73,7 @@ void push(stack *pointer, version *board);
 version* pop(stack *pointer);
 void free_space(version *board);
 void print_error(void);
+void print_target(version *board, SDL_Simplewin *sw);
 
 int main(int argc, char **argv){
     version *board, *solution;
@@ -90,7 +87,8 @@ int main(int argc, char **argv){
         if(solution->found == YES){
             //print_list(board, &sw);
             print_solution(solution, &sw);
-            printf("\nSolution found!\n");
+            printf("\nSolution found!");
+            printf("\nClick anywhere in the window to exit program.\n");
         }
         else{
             printf("\nMove not possible");
@@ -225,30 +223,38 @@ void print_board(version *board, SDL_Simplewin *sw){
             }
             else{
                 Neill_SDL_SetDrawColour(sw, 0, 0 , 0);
-                rectangle.y = row * RECT_SIZE;
                 SDL_RenderFillRect(sw->renderer, &rectangle);
-                Neill_SDL_SetDrawColour(sw, 255, 255, 255);
-                SDL_RenderDrawRect(sw->renderer, &rectangle);
                 //printf("0");
             }
+            Neill_SDL_SetDrawColour(sw, 255, 255, 255);
+            SDL_RenderDrawRect(sw->renderer, &rectangle);
         }
         //printf("\n");
     }
-    //printf("\n\n");
+    
+    print_target(board, sw);
+   
+    SDL_RenderPresent(sw->renderer);
+    SDL_UpdateWindowSurface(sw->win); 
+    SDL_Delay(1000);
+}    
+
+void print_target(version *board, SDL_Simplewin *sw){
+    SDL_Rect rectangle;
+    rectangle.w = RECT_SIZE;
+    rectangle.h = RECT_SIZE;
+
     if(board->found == NO){
         Neill_SDL_SetDrawColour(sw, 255, 0, 255);
     }
     else{
         Neill_SDL_SetDrawColour(sw, 0, 0, 255);
     }
+
     rectangle.x = board->target_column * RECT_SIZE;
     rectangle.y = board->target_row * RECT_SIZE;
     SDL_RenderFillRect(sw->renderer, &rectangle);
-    SDL_RenderPresent(sw->renderer);
-    SDL_UpdateWindowSurface(sw->win); 
-    SDL_Delay(1000);
-}    
-
+}
 void print_list(version *board, SDL_Simplewin *sw){
     printf(CLEAR_SCREEN);
     sleep(1);
@@ -279,23 +285,22 @@ void prepare_solution(version *board, stack *pointer){
 
 void push(stack *pointer, version *board)
 {
-    reverse *new;
-    new = (reverse*)malloc(sizeof(reverse));
-    new->pointer = pointer->pointer_to_stack;
+    reverse_list *new;
+    new = (reverse_list*)malloc(sizeof(reverse_list));
+    new->previous = pointer->pointer_to_stack;
     pointer->pointer_to_stack->board = board;
     pointer->pointer_to_stack = new;
 }
 
 version* pop(stack *pointer)
 {
-    pointer->pointer_to_stack = pointer->pointer_to_stack->pointer;
-    //assert(pointer->pointer_list != NULL);
+    pointer->pointer_to_stack = pointer->pointer_to_stack->previous;
     return pointer->pointer_to_stack->board;
 }
 
 void initialise_stack(stack *pointer){
-    pointer->pointer_to_stack = (reverse*)malloc(sizeof(reverse));
-    pointer->pointer_to_stack->pointer = NULL;
+    pointer->pointer_to_stack = (reverse_list*)malloc(sizeof(reverse_list));
+    pointer->pointer_to_stack->previous = NULL;
 }
 
 version* find_target(version *board){
@@ -436,10 +441,6 @@ void make_child(version *parent, version *child){
     for(row = 0; row < HEIGHT; row++){
         for(column = 0; column < WIDTH; column++){
             child->grid[row][column].alive = parent->grid[row][column].alive;
-            child->grid[row][column].left = parent->grid[row][column].left;
-            child->grid[row][column].right = parent->grid[row][column].right;
-            child->grid[row][column].up = parent->grid[row][column].up;
-            child->grid[row][column].down = parent->grid[row][column].down;
         }
     }
     child->target_row = parent->target_row;
