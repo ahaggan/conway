@@ -5,8 +5,10 @@
 *   University of Bristol
 *   2014
 *
-*   Program takes a target row and column for the user, creates a linked list of possible possitions the board can take
-*   until it finds the required solution. It then prints the solution in SDL.
+*   Program takes a target row and column for the user, creates a hash table of boards, 
+*   this table is idexed by the hash_value calculated by each layout of the board.
+*   Calculating this hash_value takes about as long as searching each of the boards, grid by grid
+*   It then prints the solution in SDL.
 *
 *
 */
@@ -185,15 +187,14 @@ void print_error(void){
 
 version* find_target(version *board){
     printf("\nStart find target");
-    int end = NO;
     version *tmp_board;
     tmp_board = board;
     
-    while(tmp_board->found == NO && end == NO){
+    while(tmp_board->found == NO){
         
             tmp_board = make_move(tmp_board);
-            if (tmp_board->next == NULL){
-                break;
+            if (tmp_board->next == NULL){   
+                break;          //HOW CAN I AVOID THIS?
             }
     }
     printf("\nEnd find target");
@@ -201,7 +202,7 @@ version* find_target(version *board){
 }
 
 version* make_move(version *board){
-    printf("\nStart make move");
+    //printf("\nStart make move");
     int row, column;
     type direction;
     version *tmp_board;
@@ -221,7 +222,7 @@ version* make_move(version *board){
                     if (search_board_list(tmp_board) == NO){
                         add_to_list(board, tmp_board);
                         board->counter += 1;
-                        printf("\nNumber of boards %d", board->counter);
+                        //printf("\nNumber of boards %d", board->counter);
                         //print_plain_board(tmp_board);
                         if(tmp_board->found == YES){
       //                      printf("\n17");
@@ -243,7 +244,7 @@ version* make_move(version *board){
         }
     }
     board->next->counter = board->counter;
-    printf("\nEnd make move");
+    //printf("\nEnd make move");
     if(board->next == NULL){
         return board;
     }
@@ -392,18 +393,18 @@ int search_board_list(version *board){
     version *tmp_board, *start_board;
     int found = NO;
     start_board = get_start_board(board);
-    tmp_board = start_board;
-    while(tmp_board != NULL && found == NO){
-        if(start_board->hash_table[board->hash_value] == NULL){
+    
+    if(start_board->hash_table[board->hash_value] == NULL){
             start_board->hash_table[board->hash_value] = (version*)malloc(sizeof(version));
             start_board->hash_table[board->hash_value] = board;
             //print_plain_board(start_board->hash_table[board->hash_value]);
             //printf("\n11");
             return NO;
-        }
-        else{
-            tmp_board = start_board->hash_table[board->hash_value];
-            do{
+    }
+    tmp_board = start_board->hash_table[board->hash_value];
+    while(tmp_board != NULL && found == NO){
+            
+           
                 //printf("\n before found =");
                 //printf("\nTmp hash value: %d", tmp_board->hash_value);
                 //print_plain_board(tmp_board);
@@ -425,12 +426,11 @@ int search_board_list(version *board){
                 else{
                     break;  //HOW ELSE CAN I DO THIS??
                 }
-            }while(tmp_board != NULL && found == NO);
-            if(found == NO){
-                tmp_board->hash_next = (version*)malloc(sizeof(version));
-                tmp_board->hash_next = board;
-            }
-        }
+    }
+ 
+    if(found == NO){
+        tmp_board->hash_next = (version*)malloc(sizeof(version));
+        tmp_board->hash_next = board;
     }
     //printf("\nEnd search");
     return found;    
