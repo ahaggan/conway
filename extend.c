@@ -23,8 +23,9 @@
 #define DEAD_VALUE 3
 #define YES 1
 #define NO 0
-#define WIDTH 7
-#define HEIGHT 8
+//Used to create a fixed 2d array to store my user defined board
+#define WIDTH 500
+#define HEIGHT 600
 #define CLEAR_SCREEN "\033[2J\033[1;1H"
 #define RECT_SIZE 20
 #define HASH_PRIME 651503 
@@ -43,6 +44,8 @@ typedef struct version{
     struct version **hash_table; //An array of version pointers
     int hash_value;     //Hash value that has been calculated from the boards grid
     cell grid[HEIGHT][WIDTH];
+    int width;
+    int height;
     int target_row;
     int target_column;
     int found;
@@ -78,12 +81,12 @@ int compare_grid(version *board, version *tmp_board);
 version* get_start_board(version *board);
 void move(version *board, int row, int column, type direction); 
 version* find_target(version *board);
-int check_input(int argc, char **argv, version *board);
+int check_input(version *board);
 void initialise_stack(stack *pointer);
 void push(stack *pointer, version *board);
 version* pop(stack *pointer);
 void free_space(version *board);
-void print_error(void);
+void print_error(int width, int height);
 void print_target(version *board, SDL_Simplewin *sw);
 void calculate_hash_value(version *board);
 
@@ -91,10 +94,12 @@ int main(int argc, char **argv){
     printf("\n1");
     version *hash_table[HASH_PRIME];
     version *board, *solution;
+
     board = create_initial_board();
     board->hash_table = hash_table;
     board->counter = 0;
-    if(check_input(argc, argv, board) == YES){
+    
+    if(check_input(board) == YES){
         printf("\nHi");
         solution = find_target(board);
         
@@ -108,8 +113,8 @@ int main(int argc, char **argv){
             printf("\nClick anywhere in the window to exit program.\n");
         }
         else{
-            print_board(board, &sw);
             printf("\nMove not possible");
+            print_board(board, &sw);
         }
         free_space(board);
         
@@ -121,20 +126,24 @@ int main(int argc, char **argv){
         return 0;
     }
     else{
-        print_error();
         return 1;
     }
     printf("\n1");
 }
 
-version* create_initial_board(void){
+version* create_initial_board(){
     printf("\n2");
     int row, column;
     version *new;
     new = (version*)malloc(sizeof(version));
-    for(row = 0; row < HEIGHT; row++){
-        for(column = 0; column < WIDTH; column++){
-            if(row > 3){
+    printf("\nPlease enter width and height of your disired board: ");
+    scanf("%d %d", &new->width, &new->height);
+    printf("\nwidth = %d, height = %d\n", new->width, new->height);
+    printf("\nPlease enter column and row you would like a solution for: ");
+    scanf("%d %d", &new->target_column, &new->target_row);
+    for(row = 0; row < new->height; row++){
+        for(column = 0; column < new->width; column++){
+            if(row >= (new->height/2)){
                 new->grid[row][column].alive = YES;
                 //new->counter += 1;
             }
@@ -148,40 +157,31 @@ version* create_initial_board(void){
     return new;
 }
 
-int check_input(int argc, char **argv, version *board){
-    int column, row;
-    printf("\nStart check input");
-    if(argc >= 3){
-    //HOW CAN I CHECK THE INPUTS ARE INTEGERS?
-        column = atoi(argv[1]);
-        row = atoi(argv[2]);
-    }
-    else{
-        printf("\nEnd check input");
-        return NO;
-    }
+int check_input(version *board){
     
-    if(column > 0 && column <= 7 && row > 0 && row <= 8){
+    printf("\nStart check input");
+    if(board->target_column > 0 && board->target_column <= board->width && board->target_row > 0 && board->target_row <= board->height){
         //User enters a number between 1 and the height and width of the board,
         //but the values used in the program are between 0 and height and width -1.
-        board->target_row = row - 1;    
-        board->target_column = column - 1;
+        board->target_row -= 1;    
+        board->target_column -= 1;
         printf("\nEnd check input");
         return YES;
         }
     else{
         printf("\nEnd check input");
+        print_error(board->width, board->height);
         return NO;
     }
     
 }
 
-void print_error(void){
+void print_error(int width, int height){
     printf("\n***************************************************************************");
     printf("\n* Your input is incorrect,                                                *");
     printf("\n* You need to enter the executable followed by the width then the height. *");
-    printf("\n* Width is between 1 and 7.                                               *");
-    printf("\n* Height is between 1 and 8.                                              *");
+    printf("\n* Width is between 1 and %d.                                               *", width);
+    printf("\n* Height is between 1 and %d.                                              *", height);
     printf("\n***************************************************************************\n\n");
 }
 
@@ -210,8 +210,8 @@ version* make_move(version *board){
     
     make_child(board, tmp_board);
     //printf("\nNext Board");
-    for(row = 0; row < HEIGHT; row++){
-        for(column = 0; column < WIDTH; column++){
+    for(row = 0; row < board->height; row++){
+        for(column = 0; column < board->width; column++){
             for(direction = up; direction <= right; direction++){
             
                 if(check(board, row, column, direction) == YES){
@@ -272,7 +272,7 @@ int check(version *board, int row, int column, type direction){
             }
             break;
         case down:
-            if(row > HEIGHT - 3){
+            if(row > board->height - 3){
                 return NO;
             }
             else{
@@ -293,7 +293,7 @@ int check(version *board, int row, int column, type direction){
             break;
         case right:
       //      printf("\nright");
-            if(column > WIDTH - 3){
+            if(column > board->width - 3){
         //        printf("\nend right no");
                 return NO;
             }
@@ -352,8 +352,8 @@ void move(version *board, int row, int column, type direction){
 void calculate_hash_value(version *board){
     //printf("\nStart calculating hash value");
     int row, column;
-    for(row = 0; row < HEIGHT; row++){
-        for(column = 0; column < WIDTH; column++){
+    for(row = 0; row < board->height; row++){
+        for(column = 0; column < board->width; column++){
             if(board->grid[row][column].alive == YES){
                 board->hash_value += (row * ALIVE_VALUE + column * ALIVE_VALUE);
             }
@@ -449,8 +449,8 @@ void add_to_list(version *board, version *tmp_board){
 int compare_grid(version *board, version *tmp_board){
     //printf("\nStart Compare");
     int row, column;
-    for(row = 0; row < HEIGHT; row++){
-        for(column = 0; column < WIDTH; column++){
+    for(row = 0; row < board->height; row++){
+        for(column = 0; column < board->width; column++){
             if( board->grid[row][column].alive != tmp_board->grid[row][column].alive){
       //          printf("\nmismatch");
                 //print_plain_board(board);
@@ -463,12 +463,31 @@ int compare_grid(version *board, version *tmp_board){
     return YES;
 }
 
+void make_child(version *parent, version *child){
+    //printf("\n21");
+    int row, column;
+    for(row = 0; row < parent->height; row++){
+        for(column = 0; column < parent->width; column++){
+            child->grid[row][column].alive = parent->grid[row][column].alive;
+        }
+    }
+    child->target_row = parent->target_row;
+    child->target_column = parent->target_column;
+    child->found = parent->found;
+    child->counter = parent->counter;
+    child->hash_table = parent->hash_table;
+    child->height = parent->height;
+    child->width = parent->width;
+    child->parent = parent;
+    //printf("\n21");
+}
+
 void print_plain_board(version *board){
     printf("\n13");
     int row, column;
      
-    for(row = 0; row < HEIGHT; row++){
-        for(column = 0; column < WIDTH; column++){
+    for(row = 0; row < board->height; row++){
+        for(column = 0; column < board->width; column++){
             
             if(board->grid[row][column].alive == YES){
                 
@@ -494,8 +513,8 @@ void print_board(version *board, SDL_Simplewin *sw){
     rectangle.w = RECT_SIZE;
     rectangle.h = RECT_SIZE;
     
-    for(row = 0; row < HEIGHT; row++){
-        for(column = 0; column < WIDTH; column++){
+    for(row = 0; row < board->height; row++){
+        for(column = 0; column < board->width; column++){
             rectangle.x = column * RECT_SIZE;
             rectangle.y = row * RECT_SIZE;
             if(board->grid[row][column].alive == YES){
@@ -601,25 +620,6 @@ void initialise_stack(stack *pointer){
     pointer->pointer_to_stack->previous = NULL;
     //printf("\n15");
 }
-
-void make_child(version *parent, version *child){
-    //printf("\n21");
-    int row, column;
-    for(row = 0; row < HEIGHT; row++){
-        for(column = 0; column < WIDTH; column++){
-            child->grid[row][column].alive = parent->grid[row][column].alive;
-        }
-    }
-    child->target_row = parent->target_row;
-    child->target_column = parent->target_column;
-    child->found = parent->found;
-    child->counter = parent->counter;
-    child->hash_table = parent->hash_table;
-    child->parent = parent;
-    //printf("\n21");
-    
-}
-    
 
     
     
