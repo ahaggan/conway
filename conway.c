@@ -134,6 +134,7 @@ version* create_initial_board(void){
             }
         }
     }
+    new->counter = 0;
     return new;
 }
 
@@ -187,6 +188,8 @@ version* make_move(version *board){
                     move(tmp_board, row, column, direction);
                     if (search_board_list(tmp_board) == NO){
                         add_to_list(board, tmp_board);
+                        board->counter += 1;
+                        printf("\nNumber of boards %d", board->counter);
                         if(tmp_board->found == YES){
                             return tmp_board;
                         }
@@ -200,6 +203,7 @@ version* make_move(version *board){
             }
         }
     }
+    board->next->counter = board->counter;
     return board->next; //will be the next board of moves to check
 }
 

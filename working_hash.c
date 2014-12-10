@@ -27,7 +27,7 @@
 #define HEIGHT 8
 #define CLEAR_SCREEN "\033[2J\033[1;1H"
 #define RECT_SIZE 20
-#define HASH_PRIME 651503 
+#define HASH_PRIME 999983 
 #define NO_CELLS 56
 
 enum type{up, down, left, right};
@@ -49,6 +49,7 @@ typedef struct version{
     int target_column;
     int found;
     int counter;
+    int no_boards;
     struct version *hash_next;
     struct version *next;
     struct version *parent;
@@ -96,7 +97,7 @@ int main(int argc, char **argv){
     version *board, *solution;
     board = create_initial_board();
     board->hash_table = hash_table;
-    board->counter = 0;
+    
     
     if(check_input(argc, argv, board) == YES){
         printf("\nInput correct");
@@ -135,6 +136,7 @@ version* create_initial_board(void){
     //printf("\n2");
     int row, column, i = 0, j = 2;
     int primes[NO_CELLS];
+    
     //Fill the primes array with 56 unique prime numbers to be allocated to the the cells of the grid in turn.
     while(i < NO_CELLS){
         if(is_prime(j) == YES){
@@ -143,20 +145,22 @@ version* create_initial_board(void){
         }
         j++;
     }
-    i = 0;  //reset primes array index 
+    //allocate the lower prime numbers to the cels that contain pegs the most to reduce the size of the hash value being worked with.
        
     version *new;
     new = (version*)malloc(sizeof(version));
+    new->counter = 0;
     for(row = 0; row < HEIGHT; row++){
         for(column = 0; column < WIDTH; column++){
             if(row > 3){
                 new->grid[row][column].alive = YES;
+                new->counter += 1;
             }
             else{
                 new->grid[row][column].alive = NO;
             }
             new->grid[row][column].prime = primes[i];
-            i++;
+            i--;
         }
     }
     new->next = NULL; //To avoid being full of garbage.
@@ -250,15 +254,15 @@ version* make_move(version *board){
                     //printf("\nFinish check\n");
                     move(tmp_board, row, column, direction);
                     //printf("\nFinish move");
-                    //tmp_board->counter -= 1;
+                    tmp_board->counter -= 1;
                     calculate_hash_value(tmp_board);
                 //    printf("\nEnd calculating hash.");
                     if (search_board_list(tmp_board) == NO){
               //          printf("\nAfter search.");
                         add_to_list(board, tmp_board);
                         //printf("\nAdded to list");
-                        board->counter += 1;
-                        printf("\nNumber of boards %d", board->counter);
+                        board->no_boards += 1;
+                        printf("\nNumber of boards %d", board->no_boards);
                         //print_plain_board(tmp_board);
                         if(tmp_board->found == YES){
             //                printf("\nEnd Make move");
@@ -280,7 +284,8 @@ version* make_move(version *board){
             }
         }
     }
-    board->next->counter = board->counter;
+    //board->next->counter = board->counter;
+    board->next->no_boards = board->no_boards;
     //printf("\nEnd make move");
     //printf("\nBefore if statement");
     /*
@@ -485,12 +490,14 @@ int search_board_list(version *board){
                 //print_plain_board(tmp_board);
                 //printf("\nboard hash value: %d", tmp_board->hash_value);
                 //print_plain_board(board);
-                if(board != NULL){
-                    found = compare_grid(board, tmp_board);
-                }
-                else{
+                
+                    if(board->counter == tmp_board->counter){
+                        found = compare_grid(board, tmp_board);
+                    }
+                
+                
   //                  printf("\nBOARD IN NULL!!");
-                }
+                
                 //print_plain_board(tmp_board);
 //                printf("\n after found =");
                 //print_plain_board(tmp_board->hash_next);
