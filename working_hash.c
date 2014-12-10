@@ -143,7 +143,7 @@ version* create_initial_board(void){
             }
         }
     }
-    new->next = NULL //To avoid being full of garbage.
+    new->next = NULL; //To avoid being full of garbage.
     calculate_hash_value(new);
     printf("\n2");
     return new;
@@ -490,8 +490,9 @@ void print_plain_board(version *board){
     printf("\n13");
 }    
            
+           
 void print_board(version *board, SDL_Simplewin *sw){
-    //printf("\n8");
+
     int row, column;
     SDL_Rect rectangle;
     rectangle.w = RECT_SIZE;
@@ -504,18 +505,17 @@ void print_board(version *board, SDL_Simplewin *sw){
             if(board->grid[row][column].alive == YES){
                 Neill_SDL_SetDrawColour(sw, 0, 255, 0);
                 SDL_RenderFillRect(sw->renderer, &rectangle);
-                printf("#");
+                //printf("#");
             }
             else{
                 Neill_SDL_SetDrawColour(sw, 0, 0 , 0);
-                rectangle.y = row * RECT_SIZE;
                 SDL_RenderFillRect(sw->renderer, &rectangle);
-                Neill_SDL_SetDrawColour(sw, 255, 255, 255);
-                SDL_RenderDrawRect(sw->renderer, &rectangle);
-                printf("0");
+                //printf("0");
             }
+            Neill_SDL_SetDrawColour(sw, 255, 255, 255);
+            SDL_RenderDrawRect(sw->renderer, &rectangle);
         }
-        printf("\n");
+        //printf("\n");
     }
     
     print_target(board, sw);
@@ -523,7 +523,6 @@ void print_board(version *board, SDL_Simplewin *sw){
     SDL_RenderPresent(sw->renderer);
     SDL_UpdateWindowSurface(sw->win); 
     SDL_Delay(1000);
-    //printf("\n8");
 }    
 
 void print_target(version *board, SDL_Simplewin *sw){
